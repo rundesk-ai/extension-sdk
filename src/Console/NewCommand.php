@@ -55,11 +55,25 @@ class NewCommand extends Command
             return Command::FAILURE;
         }
 
+        $credentials = $oauth
+            ? json_encode([
+                'oauth_token' => [
+                    'type' => 'oauth',
+                    'label' => (string) $name,
+                    'required' => true,
+                ],
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            : '{}';
+
+        // Indent the credentials block to match the manifest's indentation
+        $credentials = str_replace("\n", "\n    ", $credentials);
+
         $this->copyStubs($stubBase, $targetDir, [
             '{{ID}}' => $id,
             '{{NAME}}' => (string) $name,
             '{{DESCRIPTION}}' => (string) $description,
             '{{DATABASE_ENABLED}}' => $database ? 'true' : 'false',
+            '{{CREDENTIALS}}' => $credentials,
             '{{NAMESPACE}}' => str_replace('-', '', ucwords($id, '-')),
         ]);
 

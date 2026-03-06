@@ -16,19 +16,39 @@ abstract class BaseModel extends Model
     private static array $connectionMap = [];
 
     /**
-     * Set the extension connection for this model class and all BaseModel subclasses
-     * that don't have their own explicit connection set.
+     * Global default connection for testing (single extension per process).
+     * Production code should use setExtensionConnection on each concrete model.
+     */
+    private static ?string $defaultConnection = null;
+
+    /**
+     * Set the connection for a specific model class.
+     * Call on concrete subclasses: MyModel::setExtensionConnection('ext_my-ext');
      */
     public static function setExtensionConnection(string $connectionName): void
     {
         self::$connectionMap[static::class] = $connectionName;
+    }
 
-        // Also set on the base class so subclasses without explicit binding inherit it
-        self::$connectionMap[self::class] = $connectionName;
+    /**
+     * Set a global default connection for all BaseModel subclasses.
+     * Intended for test environments where only one extension is active.
+     */
+    public static function setDefaultConnection(string $connectionName): void
+    {
+        self::$defaultConnection = $connectionName;
+    }
+
+    /**
+     * Clear the global default connection.
+     */
+    public static function clearDefaultConnection(): void
+    {
+        self::$defaultConnection = null;
     }
 
     public function getConnectionName(): ?string
     {
-        return self::$connectionMap[static::class] ?? self::$connectionMap[self::class] ?? null;
+        return self::$connectionMap[static::class] ?? self::$defaultConnection;
     }
 }

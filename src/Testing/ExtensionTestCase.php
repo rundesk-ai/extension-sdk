@@ -29,7 +29,14 @@ abstract class ExtensionTestCase extends TestCase
 
         $this->runExtensionMigrations();
 
-        BaseModel::setExtensionConnection("ext_{$this->extensionId}");
+        BaseModel::setDefaultConnection("ext_{$this->extensionId}");
+    }
+
+    protected function tearDown(): void
+    {
+        BaseModel::clearDefaultConnection();
+
+        parent::tearDown();
     }
 
     abstract protected function extensionMigrationsPath(): string;

@@ -9,7 +9,7 @@
         "enabled": {{DATABASE_ENABLED}},
         "migrations": "migrations/"
     },
-    "credentials": {},
+    "credentials": {{CREDENTIALS}},
     "network": {
         "allowed_hosts": []
     },

@@ -103,22 +103,48 @@ class ManifestValidator
 
     private function validateFileExistence(ManifestReader $manifest, string $basePath): void
     {
+        $resolvedBase = realpath($basePath);
+
+        if ($resolvedBase === false) {
+            $this->errors[] = "Base path does not exist: {$basePath}";
+
+            return;
+        }
+
         $entry = $manifest->entry();
 
-        if ($entry !== '' && ! file_exists($basePath.'/'.$entry)) {
-            $this->errors[] = "Entry file not found: {$entry}";
+        if ($entry !== '') {
+            $entryPath = realpath($resolvedBase.'/'.$entry);
+
+            if ($entryPath === false) {
+                $this->errors[] = "Entry file not found: {$entry}";
+            } elseif (! str_starts_with($entryPath, $resolvedBase.DIRECTORY_SEPARATOR)) {
+                $this->errors[] = "Entry file escapes extension directory: {$entry}";
+            }
         }
 
         $skillGuide = $manifest->skillGuide();
 
-        if ($skillGuide !== '' && ! file_exists($basePath.'/'.$skillGuide)) {
-            $this->errors[] = "Skill guide not found: {$skillGuide}";
+        if ($skillGuide !== '') {
+            $guidePath = realpath($resolvedBase.'/'.$skillGuide);
+
+            if ($guidePath === false) {
+                $this->errors[] = "Skill guide not found: {$skillGuide}";
+            } elseif (! str_starts_with($guidePath, $resolvedBase.DIRECTORY_SEPARATOR)) {
+                $this->errors[] = "Skill guide escapes extension directory: {$skillGuide}";
+            }
         }
 
         $migrations = $manifest->migrations();
 
-        if ($migrations !== null && ! is_dir($basePath.'/'.$migrations)) {
-            $this->errors[] = "Migrations directory not found: {$migrations}";
+        if ($migrations !== null) {
+            $migrationsPath = realpath($resolvedBase.'/'.$migrations);
+
+            if ($migrationsPath === false || ! is_dir($migrationsPath)) {
+                $this->errors[] = "Migrations directory not found: {$migrations}";
+            } elseif (! str_starts_with($migrationsPath, $resolvedBase.DIRECTORY_SEPARATOR)) {
+                $this->errors[] = "Migrations directory escapes extension directory: {$migrations}";
+            }
         }
     }
 

@@ -73,11 +73,16 @@ class DevCommand extends Command
             return Command::FAILURE;
         }
 
-        // Load vendor autoloaders if present
-        foreach ($manifest->vendors() as $vendorFile) {
-            $vendorPath = $path.'/'.$vendorFile;
-            if (file_exists($vendorPath)) {
-                require_once $vendorPath;
+        // Load vendor autoloaders with path traversal protection
+        $resolvedPath = realpath($path);
+
+        if ($resolvedPath !== false) {
+            foreach ($manifest->vendors() as $vendorFile) {
+                $realVendor = realpath($resolvedPath.'/'.ltrim($vendorFile, '/'));
+
+                if ($realVendor !== false && str_starts_with($realVendor, $resolvedPath.DIRECTORY_SEPARATOR)) {
+                    require_once $realVendor;
+                }
             }
         }
 
