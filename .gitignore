@@ -1,0 +1,75 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/public/sitemap.xml
+/vendor
+.env
+.env.backup
+.env.production
+.env.signing
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+
+
+# IDE Helper
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Intellij idea
+*.iml
+.idea
+
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+components.d.ts
+auto-imports.d.ts
+
+# Runtime data (all generated files in storage root)
+storage/*.*
+!storage/.gitignore
+storage/extensions/
+
+# Electron
+electron/dist/
+dist-electron/
+dist-electron-dev/
+electron/resources/bin/
+
+# Build artifacts
+*.dmg
+*.app
+
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/node_modules/
+
+tasks/todo.md
+tasks/plan.md
