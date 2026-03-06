@@ -1,0 +1,19 @@
+{
+    "id": "{{ID}}",
+    "name": "{{NAME}}",
+    "version": "1.0.0",
+    "description": "{{DESCRIPTION}}",
+    "entry": "src/Extension.php",
+    "skill_guide": "SKILL.md",
+    "database": {
+        "enabled": {{DATABASE_ENABLED}},
+        "migrations": "migrations/"
+    },
+    "credentials": {},
+    "network": {
+        "allowed_hosts": []
+    },
+    "schedules": [],
+    "hooks": [],
+    "config": {}
+}

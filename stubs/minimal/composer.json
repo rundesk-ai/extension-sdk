@@ -1,0 +1,10 @@
+{
+    "name": "yourname/rundesk-{{ID}}",
+    "type": "rundesk-extension",
+    "require": {
+        "php": "^8.4",
+        "rundesk-ai/extension-sdk": "^1.0"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

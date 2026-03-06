@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Find autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+foreach ($autoloadPaths as $autoload) {
+    if (file_exists($autoload)) {
+        require $autoload;
+        break;
+    }
+}
+
+use Rundesk\Extension\Sdk\Console\DevCommand;
+use Rundesk\Extension\Sdk\Console\NewCommand;
+use Rundesk\Extension\Sdk\Console\ValidateCommand;
+use Symfony\Component\Console\Application;
+
+$app = new Application('Rundesk Extension SDK', '1.0.0');
+$app->add(new NewCommand());
+$app->add(new ValidateCommand());
+$app->add(new DevCommand());
+$app->run();
