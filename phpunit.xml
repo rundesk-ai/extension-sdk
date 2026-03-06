@@ -9,6 +9,14 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">src/Contracts</directory>
+        </exclude>
+    </source>
     <php>
         <env name="APP_ENV" value="testing"/>
     </php>
