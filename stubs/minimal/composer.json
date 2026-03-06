@@ -5,6 +5,17 @@
         "php": "^8.4",
         "rundesk-ai/extension-sdk": "^1.0"
     },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.16",
+        "phpstan/phpstan": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }

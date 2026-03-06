@@ -71,6 +71,26 @@ Or skip the manual setup entirely:
 ./vendor/bin/rundesk new my-extension --name="My Extension" --database
 ```
 
+## Quality Tools
+
+Scaffolded extensions include code quality tools out of the box:
+
+```bash
+# Check code style
+./vendor/bin/pint --test
+
+# Fix code style
+./vendor/bin/pint
+
+# Static analysis (level 5)
+./vendor/bin/phpstan analyse
+
+# Run tests
+./vendor/bin/pest
+```
+
+The `pint.json` (Laravel preset) and `phpstan.neon` (level 5, `src/` path) configs are included in both the standard and minimal scaffolds.
+
 ## Key Concepts
 
 ### Contracts

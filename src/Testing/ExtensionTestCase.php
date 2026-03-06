@@ -44,13 +44,15 @@ abstract class ExtensionTestCase extends TestCase
     /**
      * @param  array<string, string>  $credentials
      * @param  array<string, mixed>  $config
+     * @param  array<string, list<array{id: int, label: string, is_default: bool, metadata: array<string, mixed>|null}>>  $accounts
      */
-    protected function fakeContext(array $credentials = [], array $config = []): FakeContext
+    protected function fakeContext(array $credentials = [], array $config = [], array $accounts = []): FakeContext
     {
         return new FakeContext(
             extensionId: $this->extensionId,
             credentials: $credentials,
             config: $config,
+            accounts: $accounts,
         );
     }
 

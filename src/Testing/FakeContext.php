@@ -16,11 +16,13 @@ class FakeContext implements ExtensionContext
     /**
      * @param  array<string, string>  $credentials
      * @param  array<string, mixed>  $config
+     * @param  array<string, list<array{id: int, label: string, is_default: bool, metadata: array<string, mixed>|null}>>  $accounts
      */
     public function __construct(
         private readonly string $extensionId,
         private readonly array $credentials = [],
         private readonly array $config = [],
+        private readonly array $accounts = [],
     ) {
         $this->logger = new FakeLogger;
     }
@@ -44,7 +46,7 @@ class FakeContext implements ExtensionContext
      */
     public function accounts(string $credentialKey): array
     {
-        return [];
+        return $this->accounts[$credentialKey] ?? [];
     }
 
     public function db(): Connection
