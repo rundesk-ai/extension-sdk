@@ -91,6 +91,14 @@ class DevCommand extends Command
             return Command::FAILURE;
         }
 
+        $registerResult = $entry->register($context);
+
+        if (! $registerResult->passed) {
+            $output->writeln("<error>register() failed: {$registerResult->reason}</error>");
+
+            return Command::FAILURE;
+        }
+
         $output->writeln("<info>Executing {$method} on {$manifest->name()}...</info>");
 
         $result = $entry->execute($method, $parsedInput, $context);

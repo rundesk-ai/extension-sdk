@@ -17,6 +17,10 @@ abstract class ExtensionTestCase extends TestCase
     {
         parent::setUp();
 
+        if (! isset($this->extensionId) || $this->extensionId === '') {
+            throw new \RuntimeException(static::class.' must set the $extensionId property.');
+        }
+
         config(["database.connections.ext_{$this->extensionId}" => [
             'driver' => 'sqlite',
             'database' => ':memory:',
@@ -71,6 +75,8 @@ abstract class ExtensionTestCase extends TestCase
         if ($files === false) {
             return;
         }
+
+        sort($files);
 
         foreach ($files as $file) {
             $sql = file_get_contents($file);
