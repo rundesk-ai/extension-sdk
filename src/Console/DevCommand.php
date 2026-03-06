@@ -90,6 +90,13 @@ class DevCommand extends Command
 
         $entry = require $entryFile;
 
+        // Support both patterns:
+        // 1. Anonymous class: entry file returns an Extension instance directly
+        // 2. Named class: entry file defines a class via PSR-4 autoloading, require returns 1
+        if (! ($entry instanceof \Rundesk\Extension\Sdk\Contracts\Extension)) {
+            $entry = $this->resolveNamedExtension($entryFile, $resolvedPath);
+        }
+
         if (! ($entry instanceof \Rundesk\Extension\Sdk\Contracts\Extension)) {
             $output->writeln('<error>Entry class does not implement Rundesk\Extension\Sdk\Contracts\Extension</error>');
 
@@ -111,5 +118,42 @@ class DevCommand extends Command
         $output->writeln(json_encode($result->toArray(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 
         return $result->success ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    /**
+     * Resolve a named Extension class from a PSR-4 autoloaded entry file.
+     * Parses the namespace and class name from the file, then instantiates it.
+     */
+    private function resolveNamedExtension(string $entryFile, string|false $resolvedPath): ?object
+    {
+        $contents = file_get_contents($entryFile);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        // Extract namespace and class name from the file
+        $namespace = null;
+        $className = null;
+
+        if (preg_match('/^\s*namespace\s+([^;]+);/m', $contents, $matches)) {
+            $namespace = trim($matches[1]);
+        }
+
+        if (preg_match('/^\s*class\s+(\w+)/m', $contents, $matches)) {
+            $className = trim($matches[1]);
+        }
+
+        if ($className === null) {
+            return null;
+        }
+
+        $fqcn = $namespace ? $namespace.'\\'.$className : $className;
+
+        if (! class_exists($fqcn)) {
+            return null;
+        }
+
+        return new $fqcn;
     }
 }
