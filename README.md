@@ -1,5 +1,8 @@
 # Rundesk Extension SDK
 
+[![Automated Checks](https://github.com/rundesk-ai/extension-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/rundesk-ai/extension-sdk/actions/workflows/ci.yml)
+[![Test Coverage](https://codecov.io/gh/rundesk-ai/extension-sdk/graph/badge.svg)](https://codecov.io/gh/rundesk-ai/extension-sdk)
+
 The official SDK for building [Rundesk](https://rundesk.ai) extensions. Install it as your single Composer dependency to get contracts, base classes, testing infrastructure, and CLI tooling.
 
 Both Rundesk and extensions depend on this package — it's the shared contract that keeps both sides in sync.
