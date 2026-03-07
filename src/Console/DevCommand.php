@@ -168,10 +168,13 @@ class DevCommand extends Command
             return null;
         }
 
-        try {
-            return new $fqcn;
-        } catch (\Throwable) {
+        $reflection = new \ReflectionClass($fqcn);
+        $constructor = $reflection->getConstructor();
+
+        if ($constructor !== null && $constructor->getNumberOfRequiredParameters() > 0) {
             return null;
         }
+
+        return $reflection->newInstance();
     }
 }
