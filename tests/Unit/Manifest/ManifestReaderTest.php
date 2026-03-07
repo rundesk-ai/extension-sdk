@@ -190,3 +190,38 @@ test('fromPath throws for invalid JSON', function (): void {
     unlink($dir.'/rundesk.json');
     rmdir($dir);
 });
+
+test('fromPath throws when file exists but is unreadable', function (): void {
+    if (posix_getuid() === 0) {
+        $this->markTestSkipped('Cannot test file permissions as root');
+    }
+
+    $dir = sys_get_temp_dir().'/rundesk-test-unreadable-'.uniqid();
+    mkdir($dir, 0755, true);
+    file_put_contents($dir.'/rundesk.json', '{"id":"test"}');
+    chmod($dir.'/rundesk.json', 0000);
+
+    // Verify the file is actually unreadable before testing
+    $probe = @file_get_contents($dir.'/rundesk.json');
+    if ($probe !== false) {
+        chmod($dir.'/rundesk.json', 0644);
+        unlink($dir.'/rundesk.json');
+        rmdir($dir);
+        $this->markTestSkipped('OS does not enforce file permissions for this user');
+    }
+
+    try {
+        $thrown = false;
+        try {
+            @ManifestReader::fromPath($dir);
+        } catch (\RuntimeException $e) {
+            $thrown = true;
+            expect($e->getMessage())->toContain('Cannot read rundesk.json');
+        }
+        expect($thrown)->toBeTrue();
+    } finally {
+        chmod($dir.'/rundesk.json', 0644);
+        unlink($dir.'/rundesk.json');
+        rmdir($dir);
+    }
+});

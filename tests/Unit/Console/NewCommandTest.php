@@ -137,6 +137,37 @@ test('it fails when directory already exists', function (): void {
     cleanupDir($outputDir);
 });
 
+test('it fails when stub directory is missing', function (): void {
+    $outputDir = sys_get_temp_dir().'/rundesk-test-nostubs-'.uniqid();
+    mkdir($outputDir, 0755, true);
+
+    // The stubs path is derived from NewCommand's __DIR__: dirname(__DIR__, 2)/stubs/{type}
+    // Temporarily rename the stubs/extension directory to simulate it missing
+    $stubBase = dirname(__DIR__, 3).'/stubs/extension';
+    $renamed = $stubBase.'_backup_'.uniqid();
+
+    if (! is_dir($stubBase)) {
+        cleanupDir($outputDir);
+        $this->markTestSkipped('Stubs directory not found — cannot test missing stubs');
+    }
+
+    rename($stubBase, $renamed);
+
+    try {
+        $tester = newCommandTester();
+        $tester->execute([
+            'id' => 'stub-test',
+            '--output' => $outputDir,
+        ]);
+
+        expect($tester->getStatusCode())->toBe(1);
+        expect($tester->getDisplay())->toContain('Stub directory not found');
+    } finally {
+        rename($renamed, $stubBase);
+        cleanupDir($outputDir);
+    }
+});
+
 test('it derives name from id when not provided', function (): void {
     $outputDir = sys_get_temp_dir().'/rundesk-test-derive-'.uniqid();
     mkdir($outputDir, 0755, true);
