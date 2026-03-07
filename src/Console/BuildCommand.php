@@ -41,6 +41,18 @@ class BuildCommand extends Command
         $id = $manifest['id'];
         $version = $manifest['version'];
 
+        if (! is_string($id) || ! preg_match('/^[a-zA-Z0-9_-]+$/', $id)) {
+            $output->writeln('<error>Invalid extension id — only alphanumeric, hyphens, and underscores allowed</error>');
+
+            return Command::FAILURE;
+        }
+
+        if (! is_string($version) || ! preg_match('/^[a-zA-Z0-9._-]+$/', $version)) {
+            $output->writeln('<error>Invalid version format</error>');
+
+            return Command::FAILURE;
+        }
+
         // Install production dependencies
         $output->writeln('Installing production dependencies...');
 
@@ -50,6 +62,7 @@ class BuildCommand extends Command
         $installResult = $this->runProcess(
             'composer install --no-dev --optimize-autoloader --no-interaction',
             $projectDir,
+            $output,
         );
 
         if ($installResult !== 0) {
@@ -162,7 +175,7 @@ class BuildCommand extends Command
         ];
     }
 
-    private function runProcess(string $command, string $cwd): int
+    private function runProcess(string $command, string $cwd, ?OutputInterface $output = null): int
     {
         $descriptors = [
             0 => ['pipe', 'r'],
@@ -179,9 +192,15 @@ class BuildCommand extends Command
         fclose($pipes[0]);
         stream_get_contents($pipes[1]);
         fclose($pipes[1]);
-        stream_get_contents($pipes[2]);
+        $stderr = stream_get_contents($pipes[2]);
         fclose($pipes[2]);
 
-        return proc_close($process);
+        $exitCode = proc_close($process);
+
+        if ($exitCode !== 0 && $output !== null && $stderr !== false && $stderr !== '') {
+            $output->writeln("<error>{$stderr}</error>");
+        }
+
+        return $exitCode;
     }
 }

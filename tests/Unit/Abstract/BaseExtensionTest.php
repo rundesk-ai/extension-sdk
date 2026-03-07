@@ -13,13 +13,13 @@ function createTestExtension(): BaseExtension
     return new class extends BaseExtension
     {
         /** @param array<string, mixed> $input */
-        protected function handleListEvents(array $input, ExtensionContext $context): ExtensionResult
+        public function handleListEvents(array $input, ExtensionContext $context): ExtensionResult
         {
             return ExtensionResult::ok(['events' => ['standup', 'retro']]);
         }
 
         /** @param array<string, mixed> $input */
-        protected function dryRunListEvents(array $input): ExtensionResult
+        public function dryRunListEvents(array $input): ExtensionResult
         {
             return ExtensionResult::sample(['events' => ['sample_event']]);
         }

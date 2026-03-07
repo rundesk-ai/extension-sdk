@@ -47,6 +47,15 @@ abstract class BaseModel extends Model
         self::$defaultConnection = null;
     }
 
+    /**
+     * Clear the per-class connection map.
+     * Intended for test teardown to prevent state leaking between tests.
+     */
+    public static function clearConnectionMap(): void
+    {
+        self::$connectionMap = [];
+    }
+
     public function getConnectionName(): ?string
     {
         return self::$connectionMap[static::class] ?? self::$defaultConnection;

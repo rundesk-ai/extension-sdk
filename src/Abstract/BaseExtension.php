@@ -29,6 +29,12 @@ abstract class BaseExtension implements Extension
             return ExtensionResult::failed("Unknown method: {$method}");
         }
 
+        $reflection = new \ReflectionMethod($this, $handler);
+
+        if (! $reflection->isPublic()) {
+            return ExtensionResult::failed("Unknown method: {$method}");
+        }
+
         return $this->{$handler}($input, $context);
     }
 
@@ -42,7 +48,7 @@ abstract class BaseExtension implements Extension
     {
         $handler = 'dryRun'.str_replace('_', '', ucwords($method, '_'));
 
-        if (method_exists($this, $handler)) {
+        if (method_exists($this, $handler) && (new \ReflectionMethod($this, $handler))->isPublic()) {
             return $this->{$handler}($input);
         }
 

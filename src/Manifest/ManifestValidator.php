@@ -152,6 +152,17 @@ class ManifestValidator
     {
         $parts = preg_split('/\s+/', trim($expression));
 
-        return is_array($parts) && count($parts) === 5;
+        if (! is_array($parts) || count($parts) !== 5) {
+            return false;
+        }
+
+        // Each field must contain only valid cron characters: digits, *, /, -, ,
+        foreach ($parts as $part) {
+            if (! preg_match('/^[0-9*\/,\-]+$/', $part)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

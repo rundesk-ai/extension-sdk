@@ -51,7 +51,17 @@ class FakeContext implements ExtensionContext
 
     public function db(): Connection
     {
-        return DB::connection("ext_{$this->extensionId}");
+        $connectionName = "ext_{$this->extensionId}";
+
+        if (config("database.connections.{$connectionName}") === null) {
+            throw new \LogicException(
+                "Database connection '{$connectionName}' is not configured. "
+                .'Use ExtensionTestCase (which sets up an in-memory SQLite connection) '
+                .'or configure the connection manually before calling db().'
+            );
+        }
+
+        return DB::connection($connectionName);
     }
 
     public function config(?string $key = null, mixed $default = null): mixed

@@ -35,6 +35,7 @@ abstract class ExtensionTestCase extends TestCase
     protected function tearDown(): void
     {
         BaseModel::clearDefaultConnection();
+        BaseModel::clearConnectionMap();
 
         parent::tearDown();
     }

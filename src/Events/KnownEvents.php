@@ -21,12 +21,6 @@ final class KnownEvents
      */
     public static function all(): array
     {
-        return [
-            self::CONFIG_UPDATED,
-            self::RESOURCE_UPDATED,
-            self::SYSTEM_STATUS_UPDATED,
-            self::CHAT_MESSAGE_SENT,
-            self::EXTENSION_EXECUTED,
-        ];
+        return array_values((new \ReflectionClass(self::class))->getConstants());
     }
 }

@@ -10,6 +10,9 @@ interface ExtensionContext
 {
     public function log(): ExtensionLogger;
 
+    /**
+     * @throws \RuntimeException if the credential is not available
+     */
     public function credential(string $key, ?int $accountId = null): string;
 
     /**

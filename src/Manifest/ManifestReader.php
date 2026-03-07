@@ -76,13 +76,15 @@ class ManifestReader
 
     public function repository(): ?string
     {
-        $authorUrl = $this->data['author']['url'] ?? null;
+        $explicit = $this->data['repository'] ?? null;
 
-        if (is_string($authorUrl) && $authorUrl !== '') {
-            return $authorUrl;
+        if (is_string($explicit) && $explicit !== '') {
+            return $explicit;
         }
 
-        return $this->data['repository'] ?? null;
+        $authorUrl = $this->data['author']['url'] ?? null;
+
+        return is_string($authorUrl) && $authorUrl !== '' ? $authorUrl : null;
     }
 
     public function dbEnabled(): bool

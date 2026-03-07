@@ -27,9 +27,15 @@ class DevCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /** @var string $path */
-        $path = $input->getOption('path');
-        $path = realpath($path) ?: $path;
+        /** @var string $rawPath */
+        $rawPath = $input->getOption('path');
+        $path = realpath($rawPath);
+
+        if ($path === false) {
+            $output->writeln("<error>Cannot resolve extension path: {$rawPath}</error>");
+
+            return Command::FAILURE;
+        }
 
         /** @var string $method */
         $method = $input->getArgument('method');
@@ -57,10 +63,16 @@ class DevCommand extends Command
             return Command::FAILURE;
         }
 
-        $entryFile = $path.'/'.$manifest->entry();
+        $entryFile = realpath($path.'/'.$manifest->entry());
 
-        if (! file_exists($entryFile)) {
-            $output->writeln("<error>Entry file not found: {$entryFile}</error>");
+        if ($entryFile === false) {
+            $output->writeln("<error>Entry file not found: {$manifest->entry()}</error>");
+
+            return Command::FAILURE;
+        }
+
+        if (! str_starts_with($entryFile, $path.DIRECTORY_SEPARATOR)) {
+            $output->writeln('<error>Entry file escapes extension directory</error>');
 
             return Command::FAILURE;
         }
@@ -74,15 +86,11 @@ class DevCommand extends Command
         }
 
         // Load vendor autoloaders with path traversal protection
-        $resolvedPath = realpath($path);
+        foreach ($manifest->vendors() as $vendorFile) {
+            $realVendor = realpath($path.'/'.ltrim($vendorFile, '/'));
 
-        if ($resolvedPath !== false) {
-            foreach ($manifest->vendors() as $vendorFile) {
-                $realVendor = realpath($resolvedPath.'/'.ltrim($vendorFile, '/'));
-
-                if ($realVendor !== false && str_starts_with($realVendor, $resolvedPath.DIRECTORY_SEPARATOR)) {
-                    require_once $realVendor;
-                }
+            if ($realVendor !== false && str_starts_with($realVendor, $path.DIRECTORY_SEPARATOR)) {
+                require_once $realVendor;
             }
         }
 
@@ -94,7 +102,7 @@ class DevCommand extends Command
         // 1. Anonymous class: entry file returns an Extension instance directly
         // 2. Named class: entry file defines a class via PSR-4 autoloading, require returns 1
         if (! ($entry instanceof \Rundesk\Extension\Sdk\Contracts\Extension)) {
-            $entry = $this->resolveNamedExtension($entryFile, $resolvedPath);
+            $entry = $this->resolveNamedExtension($entryFile);
         }
 
         if (! ($entry instanceof \Rundesk\Extension\Sdk\Contracts\Extension)) {
@@ -124,7 +132,7 @@ class DevCommand extends Command
      * Resolve a named Extension class from a PSR-4 autoloaded entry file.
      * Parses the namespace and class name from the file, then instantiates it.
      */
-    private function resolveNamedExtension(string $entryFile, string|false $resolvedPath): ?object
+    private function resolveNamedExtension(string $entryFile): ?object
     {
         $contents = file_get_contents($entryFile);
 
@@ -150,7 +158,7 @@ class DevCommand extends Command
 
         $fqcn = $namespace ? $namespace.'\\'.$className : $className;
 
-        if (! class_exists($fqcn)) {
+        if (! class_exists($fqcn) || ! is_a($fqcn, \Rundesk\Extension\Sdk\Contracts\Extension::class, true)) {
             return null;
         }
 
