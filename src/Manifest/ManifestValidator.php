@@ -95,7 +95,9 @@ class ManifestValidator
                 $this->errors[] = "Schedule #{$index} missing required 'method' field";
             }
 
-            if ($cron !== '' && ! $this->isValidCron($cron)) {
+            if ($cron === '') {
+                $this->errors[] = "Schedule #{$index} missing required 'cron' field";
+            } elseif (! $this->isValidCron($cron)) {
                 $this->errors[] = "Schedule #{$index} has invalid cron expression: {$cron}";
             }
         }

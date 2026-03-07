@@ -79,8 +79,14 @@ class DevCommand extends Command
 
         $parsedInput = json_decode($jsonInput, true);
 
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $output->writeln('<error>Malformed JSON input: '.json_last_error_msg().'</error>');
+
+            return Command::FAILURE;
+        }
+
         if (! is_array($parsedInput)) {
-            $output->writeln('<error>Invalid JSON input</error>');
+            $output->writeln('<error>JSON input must be an object, got: '.gettype($parsedInput).'</error>');
 
             return Command::FAILURE;
         }
@@ -148,7 +154,7 @@ class DevCommand extends Command
             $namespace = trim($matches[1]);
         }
 
-        if (preg_match('/^\s*class\s+(\w+)/m', $contents, $matches)) {
+        if (preg_match('/^(?!\s*abstract\s)\s*class\s+(\w+)/m', $contents, $matches)) {
             $className = trim($matches[1]);
         }
 
@@ -162,6 +168,10 @@ class DevCommand extends Command
             return null;
         }
 
-        return new $fqcn;
+        try {
+            return new $fqcn;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

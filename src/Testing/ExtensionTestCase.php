@@ -92,7 +92,12 @@ abstract class ExtensionTestCase extends TestCase
             $sql = file_get_contents($file);
 
             if ($sql !== false) {
-                $pdo->exec($sql);
+                $result = $pdo->exec($sql);
+
+                if ($result === false) {
+                    $error = $pdo->errorInfo();
+                    throw new \RuntimeException('Migration failed ('.basename($file).'): '.($error[2] ?? 'unknown PDO error'));
+                }
             }
         }
     }

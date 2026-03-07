@@ -21,6 +21,9 @@ final class KnownEvents
      */
     public static function all(): array
     {
-        return array_values((new \ReflectionClass(self::class))->getConstants());
+        return array_values(array_filter(
+            (new \ReflectionClass(self::class))->getConstants(),
+            fn (mixed $v): bool => is_string($v),
+        ));
     }
 }

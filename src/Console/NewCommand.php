@@ -30,6 +30,13 @@ class NewCommand extends Command
     {
         /** @var string $id */
         $id = $input->getArgument('id');
+
+        if (! preg_match('/^[a-zA-Z0-9_-]+$/', $id)) {
+            $output->writeln('<error>Invalid extension id — only alphanumeric, hyphens, and underscores allowed</error>');
+
+            return Command::FAILURE;
+        }
+
         $name = $input->getOption('name') ?? ucwords(str_replace('-', ' ', $id));
         $description = $input->getOption('description') ?? '';
         $database = (bool) $input->getOption('database');

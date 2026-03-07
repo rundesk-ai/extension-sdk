@@ -50,3 +50,19 @@ test('accounts returns empty array', function (): void {
 
     expect($context->accounts('any_key'))->toBe([]);
 });
+
+test('db throws LogicException when connection not configured', function (): void {
+    $context = new FakeContext('unconfigured-ext');
+
+    expect(fn () => $context->db())
+        ->toThrow(\LogicException::class, 'not configured');
+});
+
+test('logger returns same FakeLogger instance', function (): void {
+    $context = new FakeContext('ext');
+
+    $logger = $context->logger();
+
+    expect($logger)->toBeInstanceOf(FakeLogger::class);
+    expect($context->logger())->toBe($logger);
+});

@@ -21,7 +21,14 @@ class BuildCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $projectDir = (string) getcwd();
+        $projectDir = getcwd();
+
+        if ($projectDir === false) {
+            $output->writeln('<error>Cannot determine current directory</error>');
+
+            return Command::FAILURE;
+        }
+
         $manifestPath = $projectDir.'/rundesk.json';
 
         if (! file_exists($manifestPath)) {
@@ -71,43 +78,42 @@ class BuildCommand extends Command
             return Command::FAILURE;
         }
 
-        /** @var string $outputDir */
-        $outputDir = $input->getOption('output');
-        $outputPath = $projectDir.'/'.ltrim($outputDir, '/');
+        try {
+            /** @var string $outputDir */
+            $outputDir = $input->getOption('output');
+            $outputPath = $projectDir.'/'.ltrim($outputDir, '/');
 
-        if (! is_dir($outputPath)) {
-            mkdir($outputPath, 0755, true);
+            if (! is_dir($outputPath)) {
+                mkdir($outputPath, 0755, true);
+            }
+
+            $zipName = "{$id}-{$version}.zip";
+            $zipPath = $outputPath.'/'.$zipName;
+
+            if (file_exists($zipPath)) {
+                unlink($zipPath);
+            }
+
+            $output->writeln("Building {$zipName}...");
+
+            $zip = new \ZipArchive;
+
+            if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+                $output->writeln('<error>Failed to create zip file</error>');
+
+                return Command::FAILURE;
+            }
+
+            $this->addDirectoryToZip($zip, $projectDir, $projectDir, $this->excludePatterns());
+            $zip->close();
+
+            $size = round((int) filesize($zipPath) / 1024);
+            $output->writeln("<info>Built: {$zipPath} ({$size} KB)</info>");
+
+            return Command::SUCCESS;
+        } finally {
+            $this->restoreVendorState($hadVendor, $vendorDir, $projectDir, $output);
         }
-
-        $zipName = "{$id}-{$version}.zip";
-        $zipPath = $outputPath.'/'.$zipName;
-
-        if (file_exists($zipPath)) {
-            unlink($zipPath);
-        }
-
-        $output->writeln("Building {$zipName}...");
-
-        $zip = new \ZipArchive;
-
-        if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
-            $output->writeln('<error>Failed to create zip file</error>');
-
-            return Command::FAILURE;
-        }
-
-        $this->addDirectoryToZip($zip, $projectDir, $projectDir, $this->excludePatterns());
-        $zip->close();
-
-        // Restore dev dependencies
-        if ($hadVendor) {
-            $this->runProcess('composer install --no-interaction', $projectDir);
-        }
-
-        $size = round((int) filesize($zipPath) / 1024);
-        $output->writeln("<info>Built: {$zipPath} ({$size} KB)</info>");
-
-        return Command::SUCCESS;
     }
 
     private function addDirectoryToZip(\ZipArchive $zip, string $baseDir, string $currentDir, array $excludes): void
@@ -124,7 +130,7 @@ class BuildCommand extends Command
             }
 
             $fullPath = $currentDir.'/'.$item;
-            $relativePath = ltrim(str_replace($baseDir, '', $fullPath), '/');
+            $relativePath = ltrim(substr($fullPath, strlen($baseDir)), DIRECTORY_SEPARATOR);
 
             if ($this->isExcluded($relativePath, $excludes)) {
                 continue;
@@ -145,7 +151,7 @@ class BuildCommand extends Command
     private function isExcluded(string $path, array $excludes): bool
     {
         foreach ($excludes as $pattern) {
-            if (str_starts_with($path, $pattern)) {
+            if ($path === $pattern || str_starts_with($path, $pattern.'/')) {
                 return true;
             }
         }
@@ -173,6 +179,34 @@ class BuildCommand extends Command
             'phpstan.neon',
             'pint.json',
         ];
+    }
+
+    private function restoreVendorState(bool $hadVendor, string $vendorDir, string $projectDir, OutputInterface $output): void
+    {
+        if ($hadVendor) {
+            $this->runProcess('composer install --no-interaction', $projectDir, $output);
+
+            return;
+        }
+
+        // Only remove vendor dir if it exists and is verified to be inside the project directory
+        $realVendor = realpath($vendorDir);
+        $realProject = realpath($projectDir);
+
+        if ($realVendor === false || $realProject === false) {
+            return;
+        }
+
+        if (! str_starts_with($realVendor, $realProject.DIRECTORY_SEPARATOR)) {
+            return;
+        }
+
+        // Final guard: must be exactly {projectDir}/vendor, not a nested or unrelated path
+        if ($realVendor !== $realProject.DIRECTORY_SEPARATOR.'vendor') {
+            return;
+        }
+
+        $this->runProcess('rm -rf '.escapeshellarg($realVendor), $projectDir, $output);
     }
 
     private function runProcess(string $command, string $cwd, ?OutputInterface $output = null): int

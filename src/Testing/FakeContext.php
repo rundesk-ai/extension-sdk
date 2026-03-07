@@ -53,7 +53,13 @@ class FakeContext implements ExtensionContext
     {
         $connectionName = "ext_{$this->extensionId}";
 
-        if (config("database.connections.{$connectionName}") === null) {
+        try {
+            $config = config("database.connections.{$connectionName}");
+        } catch (\Throwable) {
+            $config = null;
+        }
+
+        if ($config === null) {
             throw new \LogicException(
                 "Database connection '{$connectionName}' is not configured. "
                 .'Use ExtensionTestCase (which sets up an in-memory SQLite connection) '
